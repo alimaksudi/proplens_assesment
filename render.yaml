@@ -28,9 +28,7 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         sync: false
       - key: REDIS_URL
-        fromRedis:
-          name: silver-land-redis
-          property: connectionString
+        sync: false # Enter manually after creating Redis service
     healthCheckPath: /api/v1/health/
 
 databases:
@@ -38,9 +36,3 @@ databases:
     databaseName: silver_land_db
     plan: free
     region: oregon
-
-redis:
-  - name: silver-land-redis
-    plan: free
-    region: oregon
-    ipAllowList: [] # Only allow internal access
