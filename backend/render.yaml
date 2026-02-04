@@ -1,0 +1,34 @@
+# Render deployment configuration
+services:
+  - type: web
+    name: silver-land-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      cd src && python manage.py collectstatic --noinput
+      cd src && python manage.py migrate
+    startCommand: cd src && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: silver-land-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+    healthCheckPath: /api/v1/health/
+
+databases:
+  - name: silver-land-db
+    databaseName: silver_land_db
+    plan: free
+    region: oregon
