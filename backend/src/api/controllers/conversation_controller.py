@@ -106,6 +106,7 @@ class AgentController:
 
             # Get existing state
             existing_state = conversation.state
+            logger.warning(f"API - existing lead_data: {existing_state.get('lead_data', {})}")
 
             # Process message through agent
             agent = get_agent_graph()
@@ -125,8 +126,10 @@ class AgentController:
                 loop.close()
 
             # Save updated state
+            logger.warning(f"API - result lead_data BEFORE save: {result_state.get('lead_data', {})}")
             conversation.state = result_state
             conversation.save()
+            logger.warning(f"API - saved conversation {conversation.id}")
 
             # Extract response
             messages = result_state.get("messages", [])

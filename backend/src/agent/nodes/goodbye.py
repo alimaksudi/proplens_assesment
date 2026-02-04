@@ -3,6 +3,7 @@ Goodbye node for ending conversations gracefully.
 """
 
 from agent.state import ConversationState
+from agent.config import get_fallback_message
 
 
 async def handle_goodbye(state: ConversationState) -> ConversationState:
@@ -15,9 +16,9 @@ async def handle_goodbye(state: ConversationState) -> ConversationState:
 
     # Check if booking was just confirmed - give a different message
     if state.get("booking_confirmed"):
-        message = "You're all set! We'll be in touch soon about your viewing. Have a wonderful day!"
+        message = get_fallback_message("goodbye_after_booking")
     else:
-        message = "Thank you for exploring properties with Silver Land! Feel free to return whenever you're ready. Have a great day!"
+        message = get_fallback_message("goodbye_general")
 
     state["messages"].append({
         "role": "assistant",

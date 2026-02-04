@@ -68,7 +68,7 @@ class TestBookingProposalNode:
     """Tests for booking proposal node."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.booking_proposal.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_propose_with_search_results(self, mock_llm):
         """ND-BP01: With search results, ask for name and set selected_project_id."""
         state = create_initial_state("test-123")
@@ -95,7 +95,7 @@ class TestBookingProposalNode:
             assert "name" in result["messages"][-1]["content"].lower()
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.booking_proposal.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_propose_without_search_results(self, mock_llm):
         """ND-BP02: No search results gives generic booking message."""
         state = create_initial_state("test-123")
@@ -117,7 +117,7 @@ class TestBookingProposalNode:
             assert "selected_project_id" not in result or result.get("selected_project_id") is None
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.booking_proposal.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_propose_with_specific_property_mention(self, mock_llm):
         """ND-BP03: User mentions property name, set correct selected_project_id."""
         state = create_initial_state("test-123")
@@ -141,7 +141,7 @@ class TestBookingProposalNode:
             assert result["selected_project_id"] == "proj-2"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.booking_proposal.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_propose_fallback_on_error(self, mock_llm):
         """ND-BP04: LLM failure returns fallback message."""
         state = create_initial_state("test-123")
@@ -168,7 +168,7 @@ class TestLeadCaptureNode:
     """Tests for lead capture node."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_first_name(self, mock_llm):
         """ND-LC01: Extract first name from message."""
         state = create_initial_state("test-123")
@@ -192,7 +192,7 @@ class TestLeadCaptureNode:
             assert result["lead_data"].get("first_name") == "John"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_first_and_last_name(self, mock_llm):
         """ND-LC02: Extract first and last name."""
         state = create_initial_state("test-123")
@@ -217,7 +217,7 @@ class TestLeadCaptureNode:
             assert result["lead_data"].get("last_name") == "Smith"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_email(self, mock_llm):
         """ND-LC03: Extract email from message (with first_name already captured, last_name optional)."""
         state = create_initial_state("test-123")
@@ -245,7 +245,7 @@ class TestLeadCaptureNode:
                 assert result["lead_captured"] is True
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_name_and_email_combined(self, mock_llm):
         """ND-LC05: Extract first_name, last_name, and email from combined message."""
         state = create_initial_state("test-123")
@@ -275,7 +275,7 @@ class TestLeadCaptureNode:
                 assert result["lead_captured"] is True
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_fallback_on_error(self, mock_llm):
         """API error returns fallback message asking for name when message is not extractable."""
         state = create_initial_state("test-123")
@@ -296,7 +296,7 @@ class TestLeadCaptureNode:
             assert "name" in result["messages"][-1]["content"].lower()
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_fallback_asks_email_when_has_first_name(self, mock_llm):
         """API error with first_name asks for email (last_name is optional)."""
         state = create_initial_state("test-123")
@@ -404,7 +404,7 @@ class TestLeadCaptureEdgeCases:
     """Edge case tests for lead capture."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_name_with_accents(self, mock_llm):
         """EC-LC05: Name with accents accepted."""
         state = create_initial_state("test-123")
@@ -429,7 +429,7 @@ class TestLeadCaptureEdgeCases:
             assert result["current_node"] == "capture_lead"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.lead_capture.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_name_with_apostrophe(self, mock_llm):
         """EC-LC06: Name with apostrophe/hyphen accepted."""
         state = create_initial_state("test-123")

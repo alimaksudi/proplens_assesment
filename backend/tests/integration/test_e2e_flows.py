@@ -34,8 +34,8 @@ class TestE2EBookingFlow:
         conversation_id = "e2e-test-001"
 
         # Step 1: Greeting
-        with patch('agent.nodes.greeting.ChatOpenAI') as mock_greet, \
-             patch('agent.nodes.intent_classifier.ChatOpenAI') as mock_intent:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_greet, \
+             patch('agent.utils.llm.ChatOpenAI') as mock_intent:
 
             # Mock greeting response
             mock_greet_response = MagicMock()
@@ -80,7 +80,7 @@ class TestE2ENoBudgetFlow:
         # Import the preference discovery to test directly
         from agent.nodes.preference_discovery import discover_preferences
 
-        with patch('agent.nodes.preference_discovery.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_extraction_response = MagicMock()
             mock_extraction_response.content = '{"city": "Chicago", "clear_budget": true}'
 
@@ -120,7 +120,7 @@ class TestE2ECityChangeFlow:
 
         from agent.nodes.preference_discovery import discover_preferences
 
-        with patch('agent.nodes.preference_discovery.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_extraction_response = MagicMock()
             mock_extraction_response.content = '{"city": "Chicago", "country": "US"}'
 
@@ -161,7 +161,7 @@ class TestE2EQuestionAfterRecommendations:
 
         from agent.nodes.question_answering import answer_questions
 
-        with patch('agent.nodes.question_answering.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_response = MagicMock()
             mock_response.content = "There are several schools nearby including Lincoln School."
 
@@ -202,7 +202,7 @@ class TestE2EIncrementalPreferences:
 
         from agent.nodes.preference_discovery import discover_preferences
 
-        with patch('agent.nodes.preference_discovery.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_extraction_response = MagicMock()
             mock_extraction_response.content = '{"city": "Singapore", "country": "SG"}'
 
@@ -225,7 +225,7 @@ class TestE2EIncrementalPreferences:
         state = result
         state["messages"].append({"role": "user", "content": "3 bedrooms"})
 
-        with patch('agent.nodes.preference_discovery.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_extraction_response = MagicMock()
             mock_extraction_response.content = '{"bedrooms": 3}'
 
@@ -261,7 +261,7 @@ class TestE2EYesPleaseBooking:
 
         from agent.nodes.intent_classifier import classify_intent
 
-        with patch('agent.nodes.intent_classifier.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_response = MagicMock()
             mock_response.content = "book_viewing"
 
@@ -286,7 +286,7 @@ class TestE2EYesPleaseBooking:
 
         from agent.nodes.intent_classifier import classify_intent
 
-        with patch('agent.nodes.intent_classifier.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_response = MagicMock()
             mock_response.content = "book_viewing"
 
@@ -311,7 +311,7 @@ class TestE2EYesPleaseBooking:
 
         from agent.nodes.intent_classifier import classify_intent
 
-        with patch('agent.nodes.intent_classifier.ChatOpenAI') as mock_llm:
+        with patch('agent.utils.llm.ChatOpenAI') as mock_llm:
             mock_response = MagicMock()
             mock_response.content = "book_viewing"
 

@@ -117,6 +117,25 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Redis Cache Configuration
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "silver_land",
+    }
+}
+
+# Cache TTL settings (in seconds)
+CACHE_TTL_INTENT = 300          # 5 minutes for intent classification
+CACHE_TTL_PROPERTY_SEARCH = 600  # 10 minutes for property searches
+CACHE_TTL_WEB_SEARCH = 1800      # 30 minutes for web search results
+
 # OpenAI Configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')

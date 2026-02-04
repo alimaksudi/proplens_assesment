@@ -27,7 +27,7 @@ class TestGreetingNode:
         mock_chain = MagicMock()
         mock_chain.ainvoke = AsyncMock(return_value=mock_response)
 
-        with patch('agent.nodes.greeting.ChatOpenAI'):
+        with patch('agent.utils.llm.ChatOpenAI'):
             with patch('agent.nodes.greeting.ChatPromptTemplate') as mock_prompt:
                 mock_prompt.from_messages.return_value.__or__ = MagicMock(return_value=mock_chain)
 
@@ -98,7 +98,7 @@ class TestGreetingNode:
         mock_chain = MagicMock()
         mock_chain.ainvoke = AsyncMock(side_effect=Exception("API Error"))
 
-        with patch('agent.nodes.greeting.ChatOpenAI'):
+        with patch('agent.utils.llm.ChatOpenAI'):
             with patch('agent.nodes.greeting.ChatPromptTemplate') as mock_prompt:
                 mock_prompt.from_messages.return_value.__or__ = MagicMock(return_value=mock_chain)
 
@@ -155,7 +155,7 @@ class TestGreetingNode:
         mock_chain = MagicMock()
         mock_chain.ainvoke = AsyncMock(return_value=mock_response)
 
-        with patch('agent.nodes.greeting.ChatOpenAI'):
+        with patch('agent.utils.llm.ChatOpenAI'):
             with patch('agent.nodes.greeting.ChatPromptTemplate') as mock_prompt:
                 mock_prompt.from_messages.return_value.__or__ = MagicMock(return_value=mock_chain)
 
@@ -176,7 +176,7 @@ class TestGreetingNode:
         mock_chain = MagicMock()
         mock_chain.ainvoke = AsyncMock(return_value=mock_response)
 
-        with patch('agent.nodes.greeting.ChatOpenAI'):
+        with patch('agent.utils.llm.ChatOpenAI'):
             with patch('agent.nodes.greeting.ChatPromptTemplate') as mock_prompt:
                 mock_prompt.from_messages.return_value.__or__ = MagicMock(return_value=mock_chain)
 

@@ -16,7 +16,7 @@ class TestRecommendationNode:
     """Tests for recommendation node functionality."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_recommend_multiple_properties(self, mock_llm):
         """ND-RC01: 5 properties shows top 3 with details."""
         state = create_initial_state("test-123")
@@ -47,7 +47,7 @@ class TestRecommendationNode:
             assert "Lakeside Towers" in result["messages"][-1]["content"] or "Chicago" in result["messages"][-1]["content"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_recommend_single_property(self, mock_llm):
         """ND-RC02: 1 property shows single property."""
         state = create_initial_state("test-123")
@@ -72,7 +72,7 @@ class TestRecommendationNode:
             assert "Lakeside" in result["messages"][-1]["content"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_no_results_message(self, mock_llm):
         """ND-RC03: 0 properties shows 'no results' message with suggestions."""
         state = create_initial_state("test-123")
@@ -97,7 +97,7 @@ class TestRecommendationNode:
             assert "couldn't find" in response_lower or "no " in response_lower or "expanding" in response_lower
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_fallback_on_llm_error_with_results(self, mock_llm):
         """ND-RC04: LLM failure returns fallback response with results."""
         state = create_initial_state("test-123")
@@ -122,7 +122,7 @@ class TestRecommendationNode:
             assert "$750,000" in result["messages"][-1]["content"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_fallback_on_llm_error_no_results(self, mock_llm):
         """ND-RC04b: LLM failure with no results returns fallback."""
         state = create_initial_state("test-123")
@@ -144,7 +144,7 @@ class TestRecommendationNode:
             assert "couldn't find" in response_lower or "adjust" in response_lower
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_property_missing_price(self, mock_llm):
         """ND-RC05: Property missing price shows 'Price on request'."""
         state = create_initial_state("test-123")
@@ -170,7 +170,7 @@ class TestRecommendationNode:
             assert result["current_node"] == "recommend_properties"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_property_missing_area(self, mock_llm):
         """Property missing area is handled gracefully."""
         state = create_initial_state("test-123")
@@ -196,7 +196,7 @@ class TestRecommendationNode:
             assert len(result["messages"]) == 2
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.recommendation.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_recommendations_with_off_plan_status(self, mock_llm):
         """Properties with off_plan status are presented correctly."""
         state = create_initial_state("test-123")

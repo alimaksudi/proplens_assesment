@@ -2,51 +2,16 @@
 Property recommendation node for presenting search results.
 """
 
-import os
 import json
 import logging
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from agent.state import ConversationState
+from agent.config import get_fallback_message
+from agent.prompts import RECOMMENDATION_PROMPT, NO_RESULTS_PROMPT
+from agent.utils.llm import get_conversational_llm
 
 logger = logging.getLogger(__name__)
-
-RECOMMENDATION_PROMPT = """You are a property sales assistant for Silver Land Properties.
-
-User preferences:
-{preferences}
-
-Properties found (sorted by match score):
-{properties}
-
-Generate a natural response that:
-1. Briefly confirms what you searched for
-2. Presents the top 2-3 properties with key details (name, location, bedrooms, price, notable features)
-3. Highlights why each property might be a good fit
-4. Asks if they'd like more details or to schedule a viewing
-
-If no properties were found, apologize and suggest adjusting criteria.
-
-Keep response conversational and under 200 words. Do not use emojis.
-Format property details clearly but don't use markdown headers."""
-
-NO_RESULTS_PROMPT = """You are a property sales assistant for Silver Land Properties.
-
-User was looking for:
-{preferences}
-
-Unfortunately, no exact matches were found.
-
-Generate a helpful response that:
-1. Acknowledges their criteria
-2. Suggests ONE of these alternatives:
-   - Expanding the budget slightly
-   - Considering nearby cities
-   - Adjusting bedroom count
-3. Offers to search with modified criteria
-
-Keep it brief and helpful. Do not use emojis."""
 
 
 async def recommend_properties(state: ConversationState) -> ConversationState:
@@ -60,10 +25,7 @@ async def recommend_properties(state: ConversationState) -> ConversationState:
     results = state.get("search_results", [])
     preferences = state.get("preferences", {})
 
-    llm = ChatOpenAI(
-        model=os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
-        temperature=0.7
-    )
+    llm = get_conversational_llm()
 
     try:
         if results:

@@ -119,6 +119,7 @@ class PropertyAgentGraph:
             {
                 "booking": "propose_booking",
                 "search": "search_properties",
+                "goodbye": "goodbye",
                 "end": END,
             }
         )
@@ -244,7 +245,7 @@ class PropertyAgentGraph:
     def _after_question(
         self,
         state: ConversationState
-    ) -> Literal["booking", "search", "end"]:
+    ) -> Literal["booking", "search", "goodbye", "end"]:
         """Decide next step after answering a question."""
         messages = state.get("messages", [])
         if not messages:
@@ -256,10 +257,10 @@ class PropertyAgentGraph:
                 last_user_msg = msg.get("content", "").lower()
                 break
 
-        # Check for goodbye words first
-        goodbye_words = ["bye", "goodbye", "see you", "take care", "thanks bye"]
+        # Check for goodbye words first - route to goodbye node for proper farewell
+        goodbye_words = ["bye", "goodbye", "see you", "take care", "thanks bye", "thank you", "thanks"]
         if any(word in last_user_msg for word in goodbye_words):
-            return "end"
+            return "goodbye"
 
         if any(word in last_user_msg for word in ["book", "schedule", "viewing", "visit"]):
             return "booking"

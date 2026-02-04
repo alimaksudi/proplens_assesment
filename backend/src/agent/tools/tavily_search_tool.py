@@ -9,6 +9,8 @@ import os
 import logging
 from typing import Dict, Any, Optional, List
 
+from agent.utils.cache import get_cached_web_search, set_web_search_cache
+
 logger = logging.getLogger(__name__)
 
 # Tavily client import
@@ -78,6 +80,12 @@ class TavilySearchTool:
             }
 
         try:
+            # Check cache first
+            cached = get_cached_web_search(query, location)
+            if cached:
+                logger.info("Using cached web search results")
+                return cached
+
             # Build enhanced search query with project/location context
             search_query = self._build_search_query(query, project_name, location)
             logger.info(f"Tavily search query: {search_query}")
@@ -94,6 +102,10 @@ class TavilySearchTool:
             results = self._format_results(response)
 
             logger.info(f"Tavily search returned {len(results['results'])} results")
+
+            # Cache results for future requests
+            set_web_search_cache(query, results, location)
+
             return results
 
         except Exception as e:

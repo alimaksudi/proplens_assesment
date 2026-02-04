@@ -2,53 +2,19 @@
 Lead capture node for collecting user contact information.
 """
 
-import os
 import json
 import re
 import logging
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from agent.state import ConversationState
 from agent.schemas import validate_lead_data
 from agent.tools import get_booking_tool
+from agent.prompts import LEAD_EXTRACTION_PROMPT, LEAD_FOLLOWUP_PROMPT
+from agent.utils.llm import get_llm
 from domain.models import Lead
 
 logger = logging.getLogger(__name__)
-
-LEAD_EXTRACTION_PROMPT = """Extract contact information from the user's message.
-
-Current known information:
-{current_lead}
-
-User's message: {message}
-
-Extract any NEW information found. Return a JSON object with only fields that have values:
-- first_name: string
-- last_name: string
-- email: string (must be valid email format)
-- phone: string
-
-Return ONLY the JSON object, no explanation. Return {{}} if no new info found."""
-
-LEAD_FOLLOWUP_PROMPT = """You are a property sales assistant for Silver Land Properties.
-
-We're collecting information for a viewing booking.
-
-Information collected so far:
-{lead_info}
-
-Still needed: {missing_info}
-
-User just said: "{user_message}"
-
-Generate a brief response that:
-1. Thanks them for the information they provided (if any)
-2. Asks for the NEXT missing piece of information (prioritize: name > email > phone)
-   - Ask for "name" (user's full name), not "first name" separately
-   - If name is provided, ask for email
-
-Keep it to 1-2 sentences. Be professional. Do not use emojis."""
 
 
 def extract_email(text: str) -> str:
@@ -76,6 +42,7 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
     messages = state.get("messages", [])
     # IMPORTANT: Make a copy of lead_data to avoid reference issues
     lead_data = dict(state.get("lead_data", {}))
+    logger.warning(f"capture_lead START - existing lead_data from state: {lead_data}")
 
     # Get user message
     user_message = ""
@@ -134,10 +101,7 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
                         extracted["last_name"] = " ".join(w.title() for w in last_name_parts)
 
     # Try LLM extraction for additional info (but don't rely on it solely)
-    llm = ChatOpenAI(
-        model=os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
-        temperature=0
-    )
+    llm = get_llm(temperature=0)
 
     extraction_prompt = ChatPromptTemplate.from_template(LEAD_EXTRACTION_PROMPT)
 
@@ -176,7 +140,7 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
     validated_lead_data = validate_lead_data(lead_data)
     state["lead_data"] = validated_lead_data
 
-    logger.info(f"Lead data after extraction: {validated_lead_data}")
+    logger.warning(f"Lead data after extraction: {validated_lead_data}")
 
     # Ensure selected_project_id is set if we have search results
     # This handles the case where user goes directly to capture_lead via provide_contact intent

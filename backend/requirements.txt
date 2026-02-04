@@ -30,6 +30,10 @@ httpx>=0.26.0
 # CORS
 django-cors-headers>=4.3.0
 
+# Caching
+redis>=5.0.0
+django-redis>=5.4.0
+
 # Static files
 whitenoise>=6.6.0
 

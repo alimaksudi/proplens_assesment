@@ -2,31 +2,16 @@
 Booking proposal node for initiating viewing requests.
 """
 
-import os
 import json
 import logging
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from agent.state import ConversationState
+from agent.config import get_fallback_message
+from agent.prompts import BOOKING_PROPOSAL_PROMPT
+from agent.utils.llm import get_conversational_llm
 
 logger = logging.getLogger(__name__)
-
-BOOKING_PROPOSAL_PROMPT = """You are a property sales assistant for Silver Land Properties.
-
-The user has shown interest in booking a viewing.
-
-Properties they've seen:
-{properties}
-
-User's message: {user_message}
-
-Generate a response that:
-1. Confirms their interest in scheduling a viewing
-2. If they mentioned a specific property, confirm which one
-3. Ask for their first name to proceed with the booking
-
-Keep it brief and professional. Do not use emojis."""
 
 
 async def propose_booking(state: ConversationState) -> ConversationState:
@@ -76,10 +61,7 @@ async def propose_booking(state: ConversationState) -> ConversationState:
             "price": f"${prop['price_usd']:,.0f}" if prop.get("price_usd") else "Price on request"
         })
 
-    llm = ChatOpenAI(
-        model=os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
-        temperature=0.7
-    )
+    llm = get_conversational_llm()
 
     prompt = ChatPromptTemplate.from_template(BOOKING_PROPOSAL_PROMPT)
 

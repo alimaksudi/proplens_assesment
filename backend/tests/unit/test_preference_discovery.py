@@ -16,7 +16,7 @@ class TestPreferenceDiscoveryNode:
     """Tests for preference discovery functionality."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_city_and_bedrooms(self, mock_llm):
         """ND-PD01: Extract city and bedrooms from message."""
         state = create_initial_state("test-123")
@@ -45,7 +45,7 @@ class TestPreferenceDiscoveryNode:
             assert result["current_node"] == "discover_preferences"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_budget_max(self, mock_llm):
         """ND-PD02: Extract budget from message."""
         state = create_initial_state("test-123")
@@ -70,7 +70,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["budget_max"] == 500000
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_5_million_budget(self, mock_llm):
         """ND-PD03: Extract 5 million budget."""
         state = create_initial_state("test-123")
@@ -95,7 +95,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["budget_max"] == 5000000
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_under_1_million(self, mock_llm):
         """ND-PD04: Extract 'under 1 million' budget."""
         state = create_initial_state("test-123")
@@ -120,7 +120,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["budget_max"] == 1000000
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_replace_city_with_new(self, mock_llm):
         """ND-PD05: New city replaces old city."""
         state = create_initial_state("test-123")
@@ -149,7 +149,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["bedrooms"] == 2
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_clear_budget_dont_care_about_price(self, mock_llm):
         """ND-PD06: 'Don't care about price' clears budget."""
         state = create_initial_state("test-123")
@@ -179,7 +179,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["city"] == "Chicago"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_clear_budget_any_price(self, mock_llm):
         """ND-PD07: 'Any price is fine' clears budget."""
         state = create_initial_state("test-123")
@@ -207,7 +207,7 @@ class TestPreferenceDiscoveryNode:
             assert "budget_min" not in result["preferences"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_whatever_available_clears_budget_and_completes(self, mock_llm):
         """ND-PD08: 'Whatever available' clears budget and sets preferences_complete."""
         state = create_initial_state("test-123")
@@ -236,7 +236,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences_complete"] is True
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_large_budget_number(self, mock_llm):
         """ND-PD09: Extract 10000000 budget."""
         state = create_initial_state("test-123")
@@ -261,7 +261,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["budget_max"] == 10000000
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_property_type_apartment(self, mock_llm):
         """ND-PD10: Extract 'apartment' property type."""
         state = create_initial_state("test-123")
@@ -286,7 +286,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences"]["property_type"] == "apartment"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_extract_villa_with_features(self, mock_llm):
         """ND-PD11: Extract 'villa with pool' - property type and features."""
         state = create_initial_state("test-123")
@@ -312,7 +312,7 @@ class TestPreferenceDiscoveryNode:
             assert "pool" in result["preferences"].get("features", [])
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_preferences_complete_with_city_and_bedrooms(self, mock_llm):
         """City + bedrooms marks preferences as complete."""
         state = create_initial_state("test-123")
@@ -339,7 +339,7 @@ class TestPreferenceDiscoveryNode:
             assert result["preferences_complete"] is True
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_api_error_fallback(self, mock_llm):
         """API error returns fallback message."""
         state = create_initial_state("test-123")
@@ -365,7 +365,7 @@ class TestNoBudgetPhrases:
     """Tests for no budget phrase detection."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_no_budget_phrase_doesnt_matter(self, mock_llm):
         """'Doesn't matter' clears budget."""
         state = create_initial_state("test-123")
@@ -388,7 +388,7 @@ class TestNoBudgetPhrases:
             assert "budget_max" not in result["preferences"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_no_budget_phrase_show_me_all(self, mock_llm):
         """'Show me all' clears budget."""
         state = create_initial_state("test-123")
@@ -411,7 +411,7 @@ class TestNoBudgetPhrases:
             assert "budget_max" not in result["preferences"]
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.preference_discovery.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_no_budget_phrase_just_show_me(self, mock_llm):
         """'Just show me' clears budget."""
         state = create_initial_state("test-123")

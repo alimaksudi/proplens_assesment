@@ -5,54 +5,18 @@ Includes web search fallback for project-specific queries about
 external information (schools, transport, neighborhood, etc.).
 """
 
-import os
 import json
 import logging
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from agent.state import ConversationState
+from agent.config import get_fallback_message
+from agent.prompts import QA_PROMPT, QA_PROMPT_WITH_WEB_SEARCH
 from agent.tools import get_tavily_tool, should_search_web
+from agent.utils.llm import get_conversational_llm
 from domain.models import Project
 
 logger = logging.getLogger(__name__)
-
-QA_PROMPT = """You are a property sales assistant for Silver Land Properties.
-
-Context about properties the user has seen:
-{property_context}
-
-User's question: {question}
-
-Conversation history:
-{history}
-
-Answer the user's question based on the property information available.
-If asked about something not in the data (like schools, transport), say you don't have that specific information but can help with property details.
-If the question is about a specific property, provide relevant details.
-If they seem interested, gently suggest scheduling a viewing.
-
-Keep response concise and helpful. Do not use emojis."""
-
-QA_PROMPT_WITH_WEB_SEARCH = """You are a property sales assistant for Silver Land Properties.
-
-Context about properties the user has seen:
-{property_context}
-
-User's question: {question}
-
-Conversation history:
-{history}
-
-Web search results for additional context:
-{web_results}
-
-Answer the user's question using both the property information and web search results.
-When using web search information, provide helpful details about schools, transport, neighborhood, etc.
-Be helpful but note that web information may not be perfectly accurate.
-If they seem interested in a property, gently suggest scheduling a viewing.
-
-Keep response concise and helpful. Do not use emojis."""
 
 
 def _extract_project_name(search_results: list, messages: list) -> str:
@@ -124,14 +88,12 @@ async def answer_questions(state: ConversationState) -> ConversationState:
             question = msg["content"]
             break
 
-    # Check for goodbye messages (safety net for missed intent classification)
+    # Check for goodbye messages - don't process, let routing handle it
+    # The _after_question routing will send to goodbye node
     question_lower = question.lower()
-    goodbye_words = ["bye", "goodbye", "see you", "take care", "gotta go", "thanks bye"]
+    goodbye_words = ["bye", "goodbye", "see you", "take care", "gotta go", "thanks bye", "thank you", "thanks"]
     if any(word in question_lower for word in goodbye_words):
-        state["messages"].append({
-            "role": "assistant",
-            "content": "Thank you for exploring properties with me! Feel free to reach out whenever you're ready to continue. Have a great day!"
-        })
+        # Don't add a message - the goodbye node will handle this
         return state
 
     # Build property context
@@ -155,10 +117,7 @@ async def answer_questions(state: ConversationState) -> ConversationState:
         for m in messages[-6:]
     ])
 
-    llm = ChatOpenAI(
-        model=os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
-        temperature=0.7
-    )
+    llm = get_conversational_llm()
 
     # Check if web search is needed for external information
     web_results_text = ""

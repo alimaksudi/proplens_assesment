@@ -12,6 +12,7 @@ from asgiref.sync import sync_to_async
 
 from agent.state import ConversationState
 from agent.tools import get_vanna_tool
+from agent.utils.cache import get_cached_property_search, set_property_search_cache
 from domain.models import Project
 
 logger = logging.getLogger(__name__)
@@ -179,6 +180,14 @@ async def search_properties(state: ConversationState) -> ConversationState:
     preferences = state.get("preferences", {})
     messages = state.get("messages", [])
 
+    # Check cache first
+    cached_results = get_cached_property_search(preferences)
+    if cached_results is not None:
+        state["search_results"] = cached_results
+        state["recommended_projects"] = [r["id"] for r in cached_results[:5]]
+        logger.info(f"Using cached property search results ({len(cached_results)} items)")
+        return state
+
     # Get latest user message for context
     user_message = ""
     for msg in reversed(messages):
@@ -259,5 +268,8 @@ async def search_properties(state: ConversationState) -> ConversationState:
 
     if not results:
         logger.warning(f"No properties found for preferences: {preferences}")
+    else:
+        # Cache results for future requests
+        set_property_search_cache(preferences, state["search_results"])
 
     return state

@@ -64,7 +64,7 @@ class TestIntentClassifier:
     """Tests for intent classification."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.intent_classifier.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_classify_greeting_intent(self, mock_llm):
         """Test classifying greeting intent."""
         from agent.nodes.intent_classifier import classify_intent
@@ -87,7 +87,7 @@ class TestIntentClassifier:
             assert result["user_intent"] == "greeting"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.intent_classifier.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     async def test_classify_preference_intent(self, mock_llm):
         """Test classifying share_preferences intent."""
         from agent.nodes.intent_classifier import classify_intent
@@ -145,7 +145,7 @@ class TestQuestionAnswering:
     """Tests for question answering node with web search fallback."""
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.question_answering.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     @patch('agent.nodes.question_answering.get_tavily_tool')
     @patch('agent.nodes.question_answering.should_search_web')
     async def test_answer_without_web_search(self, mock_should_search, mock_get_tavily, mock_llm):
@@ -183,7 +183,7 @@ class TestQuestionAnswering:
             assert result["messages"][-1]["role"] == "assistant"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.question_answering.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     @patch('agent.nodes.question_answering.get_tavily_tool')
     @patch('agent.nodes.question_answering.should_search_web')
     async def test_answer_with_web_search_fallback(self, mock_should_search, mock_get_tavily, mock_llm):
@@ -236,7 +236,7 @@ class TestQuestionAnswering:
             assert result["messages"][-1]["role"] == "assistant"
 
     @pytest.mark.asyncio
-    @patch('agent.nodes.question_answering.ChatOpenAI')
+    @patch('agent.utils.llm.ChatOpenAI')
     @patch('agent.nodes.question_answering.get_tavily_tool')
     @patch('agent.nodes.question_answering.should_search_web')
     async def test_answer_web_search_unavailable(self, mock_should_search, mock_get_tavily, mock_llm):
