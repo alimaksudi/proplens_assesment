@@ -8,7 +8,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       cd src && python manage.py collectstatic --noinput
-      cd src && python manage.py migrate
+    preDeployCommand: "cd src && python manage.py migrate && python manage.py import_properties ../data/Property_sales_agent_-_Challenge.csv --batch-size 500"
     startCommand: cd src && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SECRET_KEY

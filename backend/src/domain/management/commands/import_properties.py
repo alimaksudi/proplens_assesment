@@ -43,12 +43,28 @@ class Command(BaseCommand):
             action='store_true',
             help='Preview import without actually importing'
         )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force import even if properties already exist in database'
+        )
 
     def handle(self, *args, **options):
         csv_file_path = options['csv_file']
         batch_size = options['batch_size']
         skip_validation = options['skip_validation']
         dry_run = options['dry_run']
+        force = options['force']
+
+        # Smart Check: Skip if database is already populated
+        if not force and not dry_run:
+            existing_count = Project.objects.count()
+            if existing_count >= 17000:
+                self.stdout.write(self.style.SUCCESS(
+                    f'Database already has {existing_count} properties. Skipping auto-import.'
+                ))
+                self.stdout.write('Use --force to override this check.')
+                return
 
         self.stdout.write(self.style.SUCCESS('\n=== Starting Property CSV Import ==='))
         self.stdout.write(f'File: {csv_file_path}')
@@ -79,23 +95,77 @@ class Command(BaseCommand):
         self._print_summary(len(rows), imported_count, updated_count, len(errors))
 
     def _extract_csv(self, file_path: str) -> List[Dict]:
-        """Extract rows from CSV with encoding detection."""
+        """
+        Extract rows from CSV using a tightened, quote-aware line-signature method.
+        """
+        import io
+        import re
         rows = []
-        encodings = ['utf-8', 'utf-8-sig', 'latin-1', 'cp1252']
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+                lines = f.readlines()
+            
+            if not lines:
+                return []
+                
+            header = [h.strip() for h in lines[0].split(',')]
+            data_lines = lines[1:]
+            
+            records_raw = []
+            current_record = []
+            
+            # Signature check: must have 10+ commas AND data patterns match
+            def is_row_start(line):
+                # Use a quote-aware split
+                f_line = io.StringIO(line)
+                reader = csv.reader(f_line)
+                try:
+                    parts = next(reader)
+                except (StopIteration, csv.Error):
+                    return False
 
-        for encoding in encodings:
-            try:
-                with open(file_path, 'r', encoding=encoding) as file:
-                    reader = csv.DictReader(file)
-                    rows = list(reader)
-                    self.stdout.write(f'Detected encoding: {encoding}')
-                    break
-            except UnicodeDecodeError:
-                continue
+                if len(parts) < 11:
+                    return False
 
-        if not rows:
-            raise Exception("Failed to read CSV with any supported encoding")
+                price = parts[6].strip()
+                area = parts[7].strip()
+                country = parts[10].strip()
+                
+                # Numeric check for Price/Area
+                is_numeric = (not price or re.match(r'^[0-9. -]+$', price)) and \
+                             (not area or re.match(r'^[0-9. -]+$', area))
+                
+                # Country check (usually 2 uppercase chars)
+                is_country = (not country or (len(country) == 2 and country.isupper()))
 
+                return is_numeric and is_country and line.count(',') >= 10
+
+            for line in data_lines:
+                if is_row_start(line):
+                    if current_record:
+                        records_raw.append("".join(current_record))
+                    current_record = [line]
+                else:
+                    current_record.append(line)
+                    
+            if current_record:
+                records_raw.append("".join(current_record))
+            
+            # Now parse each repaired raw record
+            for r in records_raw:
+                if r.count('"') % 2 != 0:
+                    r = r.strip() + '"\n'
+                
+                f_record = io.StringIO(r)
+                reader = csv.DictReader(f_record, fieldnames=header)
+                for row in reader:
+                    rows.append(row)
+                    
+            self.stdout.write(self.style.SUCCESS(f"Ultra-Robust Parser: Extracted {len(rows)} records"))
+            
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Extraction failed: {e}"))
+            
         return rows
 
     def _transform_rows(
@@ -107,9 +177,17 @@ class Command(BaseCommand):
         projects = []
         errors = []
         batch_id = datetime.now().strftime('%Y%m%d_%H%M%S')
+        last_valid_project_name = None
 
         for idx, row in enumerate(rows, start=1):
             try:
+                # Inherit project name if missing (common in hierarchical CSVs)
+                current_name = self._clean_text(row.get('Project name', ''))
+                if not current_name and last_valid_project_name:
+                    row['Project name'] = last_valid_project_name
+                elif current_name:
+                    last_valid_project_name = current_name
+
                 project = self._transform_single_row(row, batch_id)
 
                 if not skip_validation:
@@ -330,31 +408,35 @@ class Command(BaseCommand):
         for i in range(0, len(projects), batch_size):
             batch = projects[i:i + batch_size]
 
-            with transaction.atomic():
-                for project_data in batch:
-                    try:
+            for project_data in batch:
+                try:
+                    with transaction.atomic():
                         lookup = {
                             'project_name': project_data['project_name'],
                             'city': project_data['city'],
+                            'bedrooms': project_data.get('bedrooms'),
+                            'unit_type': project_data.get('unit_type'),
                         }
 
                         if project_data.get('developer_name'):
                             lookup['developer_name'] = project_data['developer_name']
 
-                        project, created = Project.objects.update_or_create(
-                            **lookup,
-                            defaults=project_data
-                        )
-
-                        if created:
-                            imported_count += 1
-                        else:
+                        # Using filter().first() instead of get() to handle edge case duplicates gracefully
+                        project = Project.objects.filter(**lookup).first()
+                        
+                        if project:
+                            for key, value in project_data.items():
+                                setattr(project, key, value)
+                            project.save()
                             updated_count += 1
+                        else:
+                            Project.objects.create(**project_data)
+                            imported_count += 1
 
-                    except Exception as e:
-                        logger.error(
-                            f"Failed to import {project_data.get('project_name')}: {e}"
-                        )
+                except Exception as e:
+                    logger.error(
+                        f"Failed to import {project_data.get('project_name')}: {e}"
+                    )
 
             batch_num = i // batch_size + 1
             total_batches = (len(projects) + batch_size - 1) // batch_size
