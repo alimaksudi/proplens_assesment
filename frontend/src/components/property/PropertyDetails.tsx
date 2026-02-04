@@ -5,9 +5,6 @@
 import { Property } from '@/types/property';
 import {
   formatPrice,
-  formatBedrooms,
-  formatBathrooms,
-  formatArea,
   formatStatus,
 } from '@/lib/utils/formatters';
 import {
