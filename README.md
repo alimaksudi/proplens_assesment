@@ -112,8 +112,6 @@ For detailed technical and strategic information, see the `/docs` folder:
 - [Project Documentation](docs/PROJECT_DOCUMENTATION.md): Complete system design and technical architecture.
 - [Business Context](docs/BUSINESS_CONTEXT.md): Product rationale, conversion funnel, and strategic business objectives.
 - [Agent Architecture](docs/AGENT_ARCHITECTURE.md): Deep dive into the LangGraph hybrid agent design.
-- [Interview Guide](docs/INTERVIEW_GUIDE.md): Key talking points, tech stack rationale, and engineering challenges.
-- [Walkthrough](file:///Users/woshiali/.gemini/antigravity/brain/5ccbb360-44fa-4b46-b836-8eeb85c6dc3f/walkthrough.md): Proof-of-work and verification results.
 
 ---
 

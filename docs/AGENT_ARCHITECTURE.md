@@ -40,16 +40,16 @@
 ```
 
 **Pros:**
-- ✅ Simplest to implement
-- ✅ Lowest latency (single LLM call per turn)
-- ✅ Easiest to debug
-- ✅ Sufficient for linear workflows
+- Simplest to implement
+- Lowest latency (single LLM call per turn)
+- Easiest to debug
+- Sufficient for linear workflows
 
 **Cons:**
-- ❌ Less modular
-- ❌ Hard to scale specific capabilities
-- ❌ All logic in one graph
-- ❌ Doesn't demonstrate advanced architecture
+- Less modular
+- Hard to scale specific capabilities
+- All logic in one graph
+- Doesn't demonstrate advanced architecture
 
 **Best for:** Proof of concepts, simple workflows
 
@@ -76,17 +76,17 @@
 ```
 
 **Pros:**
-- ✅ Highly modular (each agent is independent)
-- ✅ Parallel execution possible
-- ✅ Easy to extend (add new agents)
-- ✅ Team-based development (different devs per agent)
+- Highly modular (each agent is independent)
+- Parallel execution possible
+- Easy to extend (add new agents)
+- Team-based development (different devs per agent)
 
 **Cons:**
-- ❌ Complex coordination logic
-- ❌ Higher latency (multiple LLM calls)
-- ❌ More expensive (each agent = API call)
-- ❌ Harder to debug (distributed tracing needed)
-- ❌ Over-engineering for this assessment
+- Complex coordination logic
+- Higher latency (multiple LLM calls)
+- More expensive (each agent = API call)
+- Harder to debug (distributed tracing needed)
+- Over-engineering for this assessment
 
 **Best for:** Large-scale production systems with complex workflows
 
@@ -130,15 +130,15 @@
 - **Clear separation**: Orchestration logic vs. domain logic
 
 **Pros:**
-- ✅ Modular (tool-agents are independent)
-- ✅ Reasonable complexity (demonstrates senior thinking)
-- ✅ Debuggable (main flow is linear, tools are isolated)
-- ✅ Scalable (can parallelize tool-agent calls)
-- ✅ Best of both worlds
+- Modular (tool-agents are independent)
+- Reasonable complexity (demonstrates senior thinking)
+- Debuggable (main flow is linear, tools are isolated)
+- Scalable (can parallelize tool-agent calls)
+- Best of both worlds
 
 **Cons:**
-- ⚠️ Slightly more complex than basic approach
-- ⚠️ Requires clear interface design between components
+- Slightly more complex than basic approach
+- Requires clear interface design between components
 
 **Best for:** This assessment ⭐
 
@@ -660,24 +660,24 @@ Refactor tools into specialized agents:
 Your reference: https://docs.langchain.com/oss/python/langgraph/workflows-agents
 
 **What we're using:**
-- ✅ StateGraph for main orchestrator
-- ✅ Conditional routing between nodes
-- ✅ Checkpointing for state persistence
-- ✅ Tool calling from nodes
+- StateGraph for main orchestrator
+- Conditional routing between nodes
+- Checkpointing for state persistence
+- Tool calling from nodes
 
 **What we're NOT using:**
-- ❌ Supervisor agent (not needed for this flow)
-- ❌ Agent-to-agent communication (our tools don't talk to each other)
-- ❌ Map-reduce parallelization (not needed for this dataset size)
+- Supervisor agent (not needed for this flow)
+- Agent-to-agent communication (our tools don't talk to each other)
+- Map-reduce parallelization (not needed for this dataset size)
 
 ### Vanna AI Integration
 Your reference: https://vanna.ai/docs/configure
 
 **What we're using:**
-- ✅ ChromaDB for training data storage
-- ✅ Training with DDL + example pairs
-- ✅ `generate_sql()` for query generation
-- ✅ `run_sql()` for execution
+- ChromaDB for training data storage
+- Training with DDL + example pairs
+- `generate_sql()` for query generation
+- `run_sql()` for execution
 
 **Enhancement:**
 - Wrap Vanna in SearchToolAgent for:
@@ -689,9 +689,9 @@ Your reference: https://vanna.ai/docs/configure
 Your reference: https://github.com/tavily-ai/tavily-chat
 
 **What we're using:**
-- ✅ Tavily for web search (project-specific queries)
-- ✅ Rate limiting (max 2 searches per conversation)
-- ✅ Query enhancement (add project name to search)
+- Tavily for web search (project-specific queries)
+- Rate limiting (max 2 searches per conversation)
+- Query enhancement (add project name to search)
 
 **Enhancement:**
 - Wrap in QuestionToolAgent for:
