@@ -3,13 +3,53 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
   }
 
   body {
     @apply bg-gray-50 text-gray-900 antialiased;
   }
+}
+
+/* Custom Map Markers */
+.custom-numbered-marker {
+  background: none;
+  border: none;
+}
+
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: #4f46e5;
+  position: absolute;
+  transform: rotate(-45deg);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border: 2px solid white;
+}
+
+.marker-content {
+  color: white;
+  transform: rotate(45deg);
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: -2px;
+  margin-left: -2px;
 }
 
 @layer components {
@@ -76,7 +116,9 @@
 
 /* Typing indicator animation */
 @keyframes bounce {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
   }
   30% {

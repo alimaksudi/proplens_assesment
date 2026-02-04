@@ -3,8 +3,9 @@
  */
 
 import { useState, FormEvent, KeyboardEvent, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/common/Button';
+import { clsx } from 'clsx';
 
 interface MessageInputProps {
   onSend: (message: string) => void;
@@ -52,9 +53,9 @@ export function MessageInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-end space-x-2 p-4 bg-white border-t border-gray-200"
+      className="relative"
     >
-      <div className="flex-1">
+      <div className="relative flex items-center group">
         <label htmlFor="chat-input" className="sr-only">
           Type your message
         </label>
@@ -67,23 +68,29 @@ export function MessageInput({
           placeholder={placeholder}
           disabled={isLoading || disabled}
           rows={1}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg
-                     focus:outline-none focus:ring-2 focus:ring-primary-500
-                     focus:border-transparent resize-none
+          className="w-full pl-4 pr-12 py-3.5 border border-gray-200 rounded-2xl
+                     focus:outline-none focus:ring-2 focus:ring-primary-500/20
+                     focus:border-primary-500 resize-none bg-gray-50/50
                      disabled:bg-gray-100 disabled:cursor-not-allowed
-                     placeholder-gray-400"
-          style={{ minHeight: '48px', maxHeight: '120px' }}
+                     placeholder-gray-400 text-sm transition-all duration-200
+                     shadow-sm hover:border-gray-300"
+          style={{ minHeight: '52px', maxHeight: '160px' }}
         />
+        
+        <div className="absolute right-2 flex items-center h-full">
+          <Button
+            type="submit"
+            disabled={!message.trim() || isLoading || disabled}
+            className={clsx(
+              "h-8 w-8 !p-0 flex-shrink-0 shadow-sm rounded-lg transition-all active:scale-90",
+              message.trim() ? "bg-primary-600 text-white hover:bg-primary-700" : "bg-gray-100 text-gray-400"
+            )}
+            aria-label="Send message"
+          >
+            <ArrowUp className={clsx("w-4 h-4", isLoading ? "animate-pulse" : "")} />
+          </Button>
+        </div>
       </div>
-      <Button
-        type="submit"
-        disabled={!message.trim() || isLoading || disabled}
-        isLoading={isLoading}
-        className="h-12 w-12 !p-0 flex-shrink-0"
-        aria-label="Send message"
-      >
-        <Send className="w-5 h-5" />
-      </Button>
     </form>
   );
 }

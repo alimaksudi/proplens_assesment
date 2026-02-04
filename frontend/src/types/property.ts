@@ -7,6 +7,8 @@ export interface Property {
   project_name: string;
   city: string;
   country: string;
+  latitude?: number;
+  longitude?: number;
   property_type?: string;
   bedrooms?: number;
   bathrooms?: number;
@@ -16,6 +18,7 @@ export interface Property {
   key_features: string[];
   match_score?: number;
   description?: string;
+  image_url?: string;
 }
 
 export interface PropertyRecommendation extends Property {

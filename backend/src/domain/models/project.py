@@ -63,6 +63,7 @@ class Project(models.Model):
     features = models.JSONField(default=list, blank=True)
     facilities = models.JSONField(default=list, blank=True)
     description = models.TextField(null=True, blank=True)
+    image_url = models.URLField(max_length=500, null=True, blank=True)
 
     # Data quality tracking
     data_source = models.CharField(max_length=50, default='csv_import')
@@ -105,6 +106,7 @@ class Project(models.Model):
             'features': self.features,
             'facilities': self.facilities,
             'description': self.description[:500] if self.description else None,
+            'image_url': self.image_url,
         }
 
     def get_key_features(self, limit: int = 5) -> List[str]:

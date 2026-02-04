@@ -22,11 +22,6 @@ export function Header() {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">
-              Powered by AI
-            </span>
-          </div>
         </div>
       </div>
     </header>

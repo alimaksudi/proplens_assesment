@@ -31,6 +31,22 @@ interface UseConversationReturn {
   clearError: () => void;
 }
 
+// Helper to inject high-quality property images for demo purposes
+const injectPropertyImages = (properties: Property[]) => {
+  const images = [
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000',
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1000',
+    'https://images.unsplash.com/photo-1600607687940-472002695530?q=80&w=1000',
+    'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=1000',
+    'https://images.unsplash.com/photo-1600585154542-4912f1f12150?q=80&w=1000',
+  ];
+  
+  return properties.map((p, i) => ({
+    ...p,
+    image_url: p.image_url || images[i % images.length]
+  }));
+};
+
 export function useConversation(): UseConversationReturn {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -115,20 +131,21 @@ export function useConversation(): UseConversationReturn {
 
       try {
         const response = await apiClient.sendMessage(conversationId, content);
+        const enrichedRecommendations = injectPropertyImages(response.recommendations || []);
 
         // Attach logic to add top 3 recommendations to the message if available
         // ONLY if they are different from what we last showed to avoid repetition
         let messageRecommendations: Property[] | undefined;
         
-        if (response.recommendations && response.recommendations.length > 0) {
-            const currentIds = response.recommendations.slice(0, 3).map(p => p.id).join(',');
+        if (enrichedRecommendations.length > 0) {
+            const currentIds = enrichedRecommendations.slice(0, 3).map(p => p.id).join(',');
             const lastIds = lastDisplayedIdsRef.current;
             
             // If the recommendations are different from the last set we showed
             if (currentIds !== lastIds) {
-                messageRecommendations = response.recommendations.slice(0, 3);
+                messageRecommendations = enrichedRecommendations.slice(0, 3);
                 lastDisplayedIdsRef.current = currentIds; // Update tracking
-                setRecommendations(response.recommendations);
+                setRecommendations(enrichedRecommendations);
             }
         }
 

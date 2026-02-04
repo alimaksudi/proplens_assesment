@@ -1,11 +1,6 @@
-/**
- * Message list component for displaying conversation history.
- */
-
 import { useRef, useEffect } from 'react';
 import { Message } from '@/types/conversation';
 import { clsx } from 'clsx';
-import { User, Bot } from 'lucide-react';
 
 interface MessageListProps {
   messages: Message[];
@@ -18,9 +13,6 @@ interface MessageBubbleProps {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { PropertyCard } from '@/components/property/PropertyCard';
-import { Property } from '@/types/property';
-
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const timeString = message.timestamp.toLocaleTimeString([], {
@@ -30,17 +22,6 @@ function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className={clsx("flex flex-col space-y-2 message-enter", isUser ? "items-end" : "items-start")}>
-      {/* Property Recommendations in Chat - Displayed BEFORE the message */}
-      {!isUser && message.properties && message.properties.length > 0 && (
-        <div className="pl-11 w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
-            {message.properties.map((prop: Property) => (
-                <div key={prop.id} className="transform scale-90 origin-top-left md:scale-100">
-                    <PropertyCard property={prop} />
-                </div>
-            ))}
-        </div>
-      )}
-
       <article
         className={clsx(
           'flex items-start space-x-3 max-w-[85%]',
@@ -51,27 +32,42 @@ function MessageBubble({ message }: MessageBubbleProps) {
       >
         <div
           className={clsx(
-            'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-            isUser ? 'bg-primary-100' : 'bg-gray-100'
+            'flex-shrink-0 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-white shadow-md border-2 border-gray-100 transition-transform hover:scale-105'
           )}
         >
           {isUser ? (
-            <User className="w-4 h-4 text-primary-600" />
+            <img 
+              src="/assets/user_avatar.png" 
+              alt="User" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).parentElement!.classList.add('bg-primary-50');
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMTJhNSA1IDAgMSAwLTktOSAwIDUgNSAwIDAgMCAxMCAwek0yMCAyMGE4IDggMCAwIDAtMTYgMCIgZmlsbD0iIzYzNjZmMSIvPjwvc3ZnPg==';
+              }}
+            />
           ) : (
-            <Bot className="w-4 h-4 text-gray-600" />
+            <img 
+              src="/assets/ai_guide_avatar.png" 
+              alt="AI Guide" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).parentElement!.classList.add('bg-gray-50');
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMkwyIDIyaDIwTDEyIDJ6IiBmaWxsPSIjREREREREIi8+PC9zdmc+';
+              }}
+            />
           )}
         </div>
         <div
           className={clsx(
-            'px-4 py-3 rounded-2xl shadow-sm',
+            'px-4 py-3 rounded-2xl shadow-sm transition-all duration-300',
             isUser
-              ? 'bg-primary-600 text-white rounded-tr-md'
-              : 'bg-white border border-gray-200 text-gray-800 rounded-tl-md'
+              ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-tr-md shadow-md shadow-primary-500/10'
+              : 'bg-white/90 backdrop-blur-md border border-gray-100 text-gray-800 rounded-tl-md shadow-sm'
           )}
         >
         <div className={clsx(
           "text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1",
-          isUser ? "prose-invert text-white" : "text-gray-800"
+          isUser ? "prose-invert text-white font-medium" : "text-gray-800"
         )}>
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
@@ -110,10 +106,15 @@ export function MessageList({ messages }: MessageListProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center text-gray-500">
-          <Bot className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>Start a conversation to find your perfect property</p>
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50/50">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden shadow-2xl border-4 border-white">
+             <img src="/assets/ai_guide_avatar.png" alt="AI Guide" className="w-full h-full object-cover scale-110" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Welcome! I'm your AI Guide.</h3>
+          <p className="text-sm text-gray-500 max-w-[280px] mx-auto">
+            I'm here to help you navigate the world of premium real estate. What are you looking for today?
+          </p>
         </div>
       </div>
     );

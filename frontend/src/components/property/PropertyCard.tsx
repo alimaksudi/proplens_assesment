@@ -51,11 +51,22 @@ export function PropertyCard({
       tabIndex={onSelect ? 0 : undefined}
       aria-label={onSelect ? `${property.project_name}, ${formatPrice(property.price_usd)} in ${property.city}` : undefined}
     >
-      {/* Image Placeholder */}
-      <div className="relative h-40 bg-gradient-to-br from-gray-200 to-gray-300">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-gray-400 text-sm">No image available</span>
-        </div>
+      {/* Image Section */}
+      <div className="relative h-44 overflow-hidden bg-gray-100">
+        {property.image_url ? (
+          <img
+            src={property.image_url}
+            alt={property.project_name}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1000&auto=format&fit=crop';
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+             <span className="text-gray-400 text-sm italic">Premium Property</span>
+          </div>
+        )}
 
         {/* Match Score Badge */}
         {property.match_score !== undefined && property.match_score !== null && (
