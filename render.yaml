@@ -3,12 +3,13 @@ services:
   - type: web
     name: silver-land-api
     env: python
+    rootDir: backend
     region: oregon
     plan: free
     buildCommand: |
       pip install -r requirements.txt
       cd src && python manage.py collectstatic --noinput
-    preDeployCommand: "cd src && python manage.py migrate && python manage.py import_properties ../data/Property_sales_agent_-_Challenge.csv --batch-size 500"
+    preDeployCommand: "cd src && python manage.py migrate && python manage.py import_properties ../data/Property_sales_agent_-_Challenge.csv --batch-size 500 --force"
     startCommand: cd src && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SECRET_KEY
