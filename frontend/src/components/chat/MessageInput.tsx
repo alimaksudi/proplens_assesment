@@ -82,12 +82,14 @@ export function MessageInput({
             type="submit"
             disabled={!message.trim() || isLoading || disabled}
             className={clsx(
-              "h-8 w-8 !p-0 flex-shrink-0 shadow-sm rounded-lg transition-all active:scale-90",
-              message.trim() ? "bg-primary-600 text-white hover:bg-primary-700" : "bg-gray-100 text-gray-400"
+              "h-9 w-9 !p-0 flex-shrink-0 shadow-lg rounded-xl transition-all active:scale-90",
+              message.trim() 
+                ? "bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-primary-500/40 hover:shadow-primary-500/60 hover:-translate-y-0.5" 
+                : "bg-gray-100 text-gray-400 shadow-none"
             )}
             aria-label="Send message"
           >
-            <ArrowUp className={clsx("w-4 h-4", isLoading ? "animate-pulse" : "")} />
+            <ArrowUp className={clsx("w-4.5 h-4.5 stroke-[2.5px]", isLoading ? "animate-pulse" : "")} />
           </Button>
         </div>
       </div>

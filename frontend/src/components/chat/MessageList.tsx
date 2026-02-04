@@ -72,7 +72,10 @@ function MessageBubble({ message }: MessageBubbleProps) {
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
-                p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+                p: ({children}) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                strong: ({children}) => <strong className={clsx("font-bold", isUser ? "text-white underline decoration-white/30" : "text-primary-700")}>{children}</strong>,
+                ul: ({children}) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                li: ({children}) => <li className="text-sm">{children}</li>,
               }}
             >
               {message.content}
