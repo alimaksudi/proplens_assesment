@@ -41,6 +41,7 @@ export function useConversation(): UseConversationReturn {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const isInitialized = useRef(false);
+  const lastDisplayedIdsRef = useRef<string>('');
 
   const generateMessageId = () => {
     return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -64,6 +65,7 @@ export function useConversation(): UseConversationReturn {
     // Clear storage on new conversation
     sessionStorage.removeItem(STORAGE_KEY);
     setLastFailedMessage(null);
+    lastDisplayedIdsRef.current = ''; // Reset displayed tracking
     setRecommendations([]);
     setPreferences({});
 
@@ -114,11 +116,27 @@ export function useConversation(): UseConversationReturn {
       try {
         const response = await apiClient.sendMessage(conversationId, content);
 
-        // Add assistant message
+        // Attach logic to add top 3 recommendations to the message if available
+        // ONLY if they are different from what we last showed to avoid repetition
+        let messageRecommendations: Property[] | undefined;
+        
+        if (response.recommendations && response.recommendations.length > 0) {
+            const currentIds = response.recommendations.slice(0, 3).map(p => p.id).join(',');
+            const lastIds = lastDisplayedIdsRef.current;
+            
+            // If the recommendations are different from the last set we showed
+            if (currentIds !== lastIds) {
+                messageRecommendations = response.recommendations.slice(0, 3);
+                lastDisplayedIdsRef.current = currentIds; // Update tracking
+                setRecommendations(response.recommendations);
+            }
+        }
+
         const assistantMessage: Message = {
           id: generateMessageId(),
           role: 'assistant',
           content: response.response.message,
+          properties: messageRecommendations,
           timestamp: new Date(),
         };
 
@@ -131,11 +149,6 @@ export function useConversation(): UseConversationReturn {
             ...prev,
             ...response.response.structured_data?.preferences_captured,
           }));
-        }
-
-        // Update recommendations
-        if (response.recommendations && response.recommendations.length > 0) {
-          setRecommendations(response.recommendations);
         }
       } catch (err) {
         const errorMessage =

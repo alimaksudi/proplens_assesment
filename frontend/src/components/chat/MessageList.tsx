@@ -15,6 +15,12 @@ interface MessageBubbleProps {
   message: Message;
 }
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import { PropertyCard } from '@/components/property/PropertyCard';
+import { Property } from '@/types/property';
+
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const timeString = message.timestamp.toLocaleTimeString([], {
@@ -23,47 +29,71 @@ function MessageBubble({ message }: MessageBubbleProps) {
   });
 
   return (
-    <article
-      className={clsx(
-        'flex items-start space-x-3 message-enter',
-        isUser && 'flex-row-reverse space-x-reverse'
+    <div className={clsx("flex flex-col space-y-2 message-enter", isUser ? "items-end" : "items-start")}>
+      {/* Property Recommendations in Chat - Displayed BEFORE the message */}
+      {!isUser && message.properties && message.properties.length > 0 && (
+        <div className="pl-11 w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+            {message.properties.map((prop: Property) => (
+                <div key={prop.id} className="transform scale-90 origin-top-left md:scale-100">
+                    <PropertyCard property={prop} />
+                </div>
+            ))}
+        </div>
       )}
-      role="article"
-      aria-label={`${isUser ? 'Your message' : 'Agent message'} at ${timeString}`}
-    >
-      <div
+
+      <article
         className={clsx(
-          'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-          isUser ? 'bg-primary-100' : 'bg-gray-100'
+          'flex items-start space-x-3 max-w-[85%]',
+          isUser && 'flex-row-reverse space-x-reverse'
         )}
+        role="article"
+        aria-label={`${isUser ? 'Your message' : 'Agent message'} at ${timeString}`}
       >
-        {isUser ? (
-          <User className="w-4 h-4 text-primary-600" />
-        ) : (
-          <Bot className="w-4 h-4 text-gray-600" />
-        )}
-      </div>
-      <div
-        className={clsx(
-          'max-w-[75%] px-4 py-3 rounded-2xl',
-          isUser
-            ? 'bg-primary-600 text-white rounded-tr-md'
-            : 'bg-white border border-gray-200 text-gray-800 rounded-tl-md'
-        )}
-      >
-        <p className="text-sm whitespace-pre-wrap leading-relaxed">
-          {message.content}
-        </p>
-        <span
+        <div
           className={clsx(
-            'text-xs mt-1 block',
-            isUser ? 'text-primary-200' : 'text-gray-400'
+            'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+            isUser ? 'bg-primary-100' : 'bg-gray-100'
           )}
         >
-          {timeString}
-        </span>
-      </div>
-    </article>
+          {isUser ? (
+            <User className="w-4 h-4 text-primary-600" />
+          ) : (
+            <Bot className="w-4 h-4 text-gray-600" />
+          )}
+        </div>
+        <div
+          className={clsx(
+            'px-4 py-3 rounded-2xl shadow-sm',
+            isUser
+              ? 'bg-primary-600 text-white rounded-tr-md'
+              : 'bg-white border border-gray-200 text-gray-800 rounded-tl-md'
+          )}
+        >
+        <div className={clsx(
+          "text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1",
+          isUser ? "prose-invert text-white" : "text-gray-800"
+        )}>
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          </div>
+          <span
+            className={clsx(
+              'text-xs mt-1 block',
+              isUser ? 'text-primary-200' : 'text-gray-400'
+            )}
+          >
+            {timeString}
+          </span>
+        </div>
+      </article>
+
+    </div>
   );
 }
 

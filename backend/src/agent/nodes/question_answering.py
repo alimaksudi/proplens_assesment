@@ -8,6 +8,7 @@ external information (schools, transport, neighborhood, etc.).
 import json
 import logging
 from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
 
 from agent.state import ConversationState
 from agent.config import get_fallback_message
@@ -117,7 +118,12 @@ async def answer_questions(state: ConversationState) -> ConversationState:
         for m in messages[-6:]
     ])
 
-    llm = get_conversational_llm()
+    # Use structured output for reliable formatting (avoiding raw markdown if undesired)
+    class QAResponse(BaseModel):
+        """Structure for the answer to ensure clean formatting."""
+        answer: str = Field(..., description="The answer to the user's question. Use clear, plain text paragraphs. Do NOT use markdown formatting like bold (**text**) or lists (- item).")
+        
+    llm = get_conversational_llm().with_structured_output(QAResponse)
 
     # Check if web search is needed for external information
     web_results_text = ""
@@ -174,7 +180,7 @@ async def answer_questions(state: ConversationState) -> ConversationState:
 
         state["messages"].append({
             "role": "assistant",
-            "content": response.content
+            "content": response.answer
         })
 
     except Exception as e:
