@@ -3,7 +3,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { apiClient } from '@/lib/api/client';
+import { apiClient } from '../lib/api/client';
 import { Message, Preferences } from '@/types/conversation';
 import { Property } from '@/types/property';
 

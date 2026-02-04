@@ -6,7 +6,7 @@ import { Property } from '@/types/property';
 import {
   formatPrice,
   formatStatus,
-} from '@/lib/utils/formatters';
+} from '../../lib/utils/formatters';
 import {
   MapPin,
   Bed,

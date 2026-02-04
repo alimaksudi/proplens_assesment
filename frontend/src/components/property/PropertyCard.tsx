@@ -10,7 +10,7 @@ import {
   formatArea,
   formatStatus,
   formatMatchScore,
-} from '@/lib/utils/formatters';
+} from '../../lib/utils/formatters';
 import { MapPin, Bed, Bath, Square, Calendar, CheckCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 
