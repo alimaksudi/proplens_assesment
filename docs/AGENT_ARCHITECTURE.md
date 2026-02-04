@@ -92,7 +92,7 @@
 
 ---
 
-### Option 3: Hybrid (Recommended) ⭐
+### Option 3: Hybrid (Recommended)
 
 ```
 ┌────────────────────────────────────────────┐
@@ -140,7 +140,7 @@
 - Slightly more complex than basic approach
 - Requires clear interface design between components
 
-**Best for:** This assessment ⭐
+**Best for:** This assessment
 
 ---
 

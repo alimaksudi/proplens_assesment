@@ -113,14 +113,14 @@ Views recommendations → Asks questions → Books viewing → Lead captured
 **Question:** When exactly should the agent invoke web search vs. admit "I don't know"?
 
 **Decision:** Invoke web search for:
-- ✅ Project-specific factual queries (schools nearby, transport links)
-- ✅ Amenity details not in database
-- ✅ Neighborhood information
+- Project-specific factual queries (schools nearby, transport links)
+- Amenity details not in database
+- Neighborhood information
 
 Do NOT invoke for:
-- ❌ General property recommendations (must use database)
-- ❌ Property availability or pricing (database is source of truth)
-- ❌ Legal or financial advice
+- General property recommendations (must use database)
+- Property availability or pricing (database is source of truth)
+- Legal or financial advice
 
 ### 2.2 Technical Assumptions
 
@@ -872,26 +872,26 @@ ALLOWED_HOSTS=silver-land-agent.onrender.com
 This submission will be considered successful if:
 
 1. **Functional Requirements Met:**
-   - ✅ Agent completes preference discovery → recommendation → booking flow
-   - ✅ Text-to-SQL works for at least 80% of common queries
-   - ✅ No hallucinated property details (database is source of truth)
-   - ✅ Bookings persist correctly in database
+   - Agent completes preference discovery → recommendation → booking flow
+   - Text-to-SQL works for at least 80% of common queries
+   - No hallucinated property details (database is source of truth)
+   - Bookings persist correctly in database
 
 2. **Code Quality:**
-   - ✅ Clean, modular architecture (separation of concerns)
-   - ✅ Comprehensive tests (80%+ coverage)
-   - ✅ Documented code and API endpoints
-   - ✅ Follows Python best practices (PEP 8, type hints)
+   - Clean, modular architecture (separation of concerns)
+   - Comprehensive tests (80%+ coverage)
+   - Documented code and API endpoints
+   - Follows Python best practices (PEP 8, type hints)
 
 3. **Deployment:**
-   - ✅ Runs reliably on Render
-   - ✅ API accessible via public URL
-   - ✅ Response times under 2 seconds (95th percentile)
+   - Runs reliably on Render
+   - API accessible via public URL
+   - Response times under 2 seconds (95th percentile)
 
 4. **Documentation:**
-   - ✅ Clear README with setup instructions
-   - ✅ API documentation (Swagger)
-   - ✅ Architecture decision records (this document)
+   - Clear README with setup instructions
+   - API documentation (Swagger)
+   - Architecture decision records (this document)
 
 ---
 
