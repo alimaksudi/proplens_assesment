@@ -27,6 +27,7 @@ from .nodes import (
     capture_lead_details,
     confirm_booking,
     handle_error,
+    handle_goodbye,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ class PropertyAgentGraph:
         graph.add_node("capture_lead", capture_lead_details)
         graph.add_node("confirm_booking", confirm_booking)
         graph.add_node("handle_error", handle_error)
+        graph.add_node("goodbye", handle_goodbye)
 
         # Set entry point
         graph.set_entry_point("greeting")
@@ -89,6 +91,7 @@ class PropertyAgentGraph:
                 "booking": "propose_booking",
                 "provide_contact": "capture_lead",
                 "error": "handle_error",
+                "goodbye": "goodbye",
                 "end": END,
             }
         )
@@ -136,6 +139,9 @@ class PropertyAgentGraph:
         # From confirm_booking
         graph.add_edge("confirm_booking", END)
 
+        # From goodbye
+        graph.add_edge("goodbye", END)
+
         # From handle_error
         graph.add_edge("handle_error", END)
 
@@ -179,7 +185,7 @@ class PropertyAgentGraph:
             return "provide_contact"
 
         elif intent == "goodbye":
-            return "end"
+            return "goodbye"
 
         elif intent == "clarify":
             # User is clarifying - route to Q&A to handle clarification
@@ -190,6 +196,19 @@ class PropertyAgentGraph:
             # Smart fallback: If we have some conversation context, try to answer
             # Only go to preference_discovery if this is truly a new conversation
             messages = state.get("messages", [])
+
+            # First check for goodbye words (safety net for missed intent classification)
+            if messages:
+                last_user_msg = ""
+                for msg in reversed(messages):
+                    if msg.get("role") == "user":
+                        last_user_msg = msg.get("content", "").lower()
+                        break
+
+                goodbye_words = ["bye", "goodbye", "see you", "take care", "gotta go", "thanks bye", "thank you bye", "thanks", "thank you"]
+                if any(word in last_user_msg for word in goodbye_words):
+                    return "goodbye"
+
             has_context = len(messages) > 2  # More than just greeting exchange
 
             if has_context:
@@ -237,6 +256,11 @@ class PropertyAgentGraph:
                 last_user_msg = msg.get("content", "").lower()
                 break
 
+        # Check for goodbye words first
+        goodbye_words = ["bye", "goodbye", "see you", "take care", "thanks bye"]
+        if any(word in last_user_msg for word in goodbye_words):
+            return "end"
+
         if any(word in last_user_msg for word in ["book", "schedule", "viewing", "visit"]):
             return "booking"
 
@@ -251,6 +275,7 @@ class PropertyAgentGraph:
     ) -> Literal["confirm", "continue"]:
         """Check if we have all required lead information."""
         lead = state.get("lead_data", {})
+        # Only require first_name + email; last_name is optional (parsed from full name)
         required_fields = ["first_name", "email"]
         has_required = all(lead.get(field) for field in required_fields)
 

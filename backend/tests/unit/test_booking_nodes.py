@@ -219,10 +219,10 @@ class TestLeadCaptureNode:
     @pytest.mark.asyncio
     @patch('agent.nodes.lead_capture.ChatOpenAI')
     async def test_extract_email(self, mock_llm):
-        """ND-LC03: Extract email from message."""
+        """ND-LC03: Extract email from message (with first_name already captured, last_name optional)."""
         state = create_initial_state("test-123")
         state["messages"] = [{"role": "user", "content": "john@example.com"}]
-        state["lead_data"] = {"first_name": "John"}
+        state["lead_data"] = {"first_name": "John"}  # Only first_name required now
 
         mock_extraction_response = MagicMock()
         mock_extraction_response.content = '{"email": "john@example.com"}'
@@ -247,13 +247,13 @@ class TestLeadCaptureNode:
     @pytest.mark.asyncio
     @patch('agent.nodes.lead_capture.ChatOpenAI')
     async def test_extract_name_and_email_combined(self, mock_llm):
-        """ND-LC05: Extract name and email from combined message."""
+        """ND-LC05: Extract first_name, last_name, and email from combined message."""
         state = create_initial_state("test-123")
-        state["messages"] = [{"role": "user", "content": "John, john@test.com"}]
+        state["messages"] = [{"role": "user", "content": "John Smith, john@test.com"}]
         state["lead_data"] = {}
 
         mock_extraction_response = MagicMock()
-        mock_extraction_response.content = '{"first_name": "John", "email": "john@test.com"}'
+        mock_extraction_response.content = '{"first_name": "John", "last_name": "Smith", "email": "john@test.com"}'
 
         mock_chain = MagicMock()
         mock_chain.ainvoke = AsyncMock(return_value=mock_extraction_response)
@@ -270,6 +270,7 @@ class TestLeadCaptureNode:
                 result = await capture_lead_details(state)
 
                 assert result["lead_data"].get("first_name") == "John"
+                assert result["lead_data"].get("last_name") == "Smith"
                 assert result["lead_data"].get("email") == "john@test.com"
                 assert result["lead_captured"] is True
 
@@ -291,12 +292,13 @@ class TestLeadCaptureNode:
             result = await capture_lead_details(state)
 
             assert len(result["messages"]) == 2
-            assert "first name" in result["messages"][-1]["content"].lower()
+            # Now asks for "name" (not "first name") since we collect full name at once
+            assert "name" in result["messages"][-1]["content"].lower()
 
     @pytest.mark.asyncio
     @patch('agent.nodes.lead_capture.ChatOpenAI')
-    async def test_fallback_asks_email_when_has_name(self, mock_llm):
-        """API error with name asks for email."""
+    async def test_fallback_asks_email_when_has_first_name(self, mock_llm):
+        """API error with first_name asks for email (last_name is optional)."""
         state = create_initial_state("test-123")
         state["messages"] = [{"role": "user", "content": "test"}]
         state["lead_data"] = {"first_name": "John"}
@@ -310,6 +312,7 @@ class TestLeadCaptureNode:
             result = await capture_lead_details(state)
 
             assert len(result["messages"]) == 2
+            # Now asks for email directly (last_name is optional)
             assert "email" in result["messages"][-1]["content"].lower()
             assert "John" in result["messages"][-1]["content"]
 
@@ -347,7 +350,7 @@ class TestBookingConfirmationNode:
 
     @pytest.mark.asyncio
     async def test_confirm_missing_lead_id(self):
-        """ND-BC02: Missing lead_id asks for first name (not property confirmation)."""
+        """ND-BC02: Missing lead_id asks for name (not property confirmation)."""
         state = create_initial_state("test-123")
         state["lead_id"] = None
         state["selected_project_id"] = "proj-123"
@@ -357,8 +360,8 @@ class TestBookingConfirmationNode:
         result = await confirm_booking(state)
 
         assert len(result["messages"]) == 1
-        # Should ask for first name, not "which property"
-        assert "first name" in result["messages"][-1]["content"].lower()
+        # Should ask for name, not "which property"
+        assert "name" in result["messages"][-1]["content"].lower()
         assert "booking_confirmed" not in result or not result.get("booking_confirmed")
 
     @pytest.mark.asyncio
@@ -367,7 +370,8 @@ class TestBookingConfirmationNode:
         state = create_initial_state("test-123")
         state["lead_id"] = None  # No lead_id but we have complete lead_data
         state["selected_project_id"] = None
-        state["lead_data"] = {"first_name": "John", "email": "john@example.com"}  # Complete lead data
+        # Complete lead data requires first_name + email (last_name is optional)
+        state["lead_data"] = {"first_name": "John", "email": "john@example.com"}
         state["messages"] = []
 
         result = await confirm_booking(state)

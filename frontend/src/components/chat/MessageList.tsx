@@ -17,13 +17,19 @@ interface MessageBubbleProps {
 
 function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const timeString = message.timestamp.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
-    <div
+    <article
       className={clsx(
         'flex items-start space-x-3 message-enter',
         isUser && 'flex-row-reverse space-x-reverse'
       )}
+      role="article"
+      aria-label={`${isUser ? 'Your message' : 'Agent message'} at ${timeString}`}
     >
       <div
         className={clsx(
@@ -54,13 +60,10 @@ function MessageBubble({ message }: MessageBubbleProps) {
             isUser ? 'text-primary-200' : 'text-gray-400'
           )}
         >
-          {message.timestamp.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          {timeString}
         </span>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -86,8 +89,16 @@ export function MessageList({ messages }: MessageListProps) {
     );
   }
 
+  // TODO: For 50+ messages, consider react-window virtualization
+  // import { VariableSizeList } from 'react-window';
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+    <div
+      className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+      role="log"
+      aria-label="Chat messages"
+      aria-live="polite"
+    >
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}

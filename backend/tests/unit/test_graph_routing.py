@@ -109,12 +109,12 @@ class TestRouteAfterClassification:
         assert result == "provide_contact"
 
     def test_route_goodbye_intent(self, agent_graph):
-        """RT-11: Goodbye intent routes to end."""
+        """RT-11: Goodbye intent routes to goodbye node."""
         state = create_initial_state("test-123")
         state["user_intent"] = "goodbye"
 
         result = agent_graph._route_after_classification(state)
-        assert result == "end"
+        assert result == "goodbye"
 
     def test_route_clarify_intent(self, agent_graph):
         """RT-12: Clarify intent routes to question."""
@@ -304,6 +304,7 @@ class TestLeadCaptureComplete:
         state = create_initial_state("test-123")
         state["lead_data"] = {
             "first_name": "John",
+            # last_name is optional - only first_name + email required
             "email": "john@example.com"
         }
         state["selected_project_id"] = "project-123"
@@ -334,6 +335,7 @@ class TestLeadCaptureComplete:
         state = create_initial_state("test-123")
         state["lead_data"] = {
             "first_name": "John",
+            # last_name is optional
             "email": "john@example.com"
         }
         state["selected_project_id"] = None

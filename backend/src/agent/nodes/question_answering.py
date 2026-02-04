@@ -124,6 +124,16 @@ async def answer_questions(state: ConversationState) -> ConversationState:
             question = msg["content"]
             break
 
+    # Check for goodbye messages (safety net for missed intent classification)
+    question_lower = question.lower()
+    goodbye_words = ["bye", "goodbye", "see you", "take care", "gotta go", "thanks bye"]
+    if any(word in question_lower for word in goodbye_words):
+        state["messages"].append({
+            "role": "assistant",
+            "content": "Thank you for exploring properties with me! Feel free to reach out whenever you're ready to continue. Have a great day!"
+        })
+        return state
+
     # Build property context
     property_context = "No specific properties discussed yet."
     if search_results:

@@ -2,10 +2,19 @@
  * Custom hook for managing conversation state.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api/client';
 import { Message, Preferences } from '@/types/conversation';
 import { Property } from '@/types/property';
+
+const STORAGE_KEY = 'silverland_conversation';
+
+interface StoredConversation {
+  conversationId: string;
+  messages: Array<{ id: string; role: string; content: string; timestamp: string }>;
+  preferences: Preferences;
+  recommendations: Property[];
+}
 
 interface UseConversationReturn {
   conversationId: string | null;
@@ -14,8 +23,11 @@ interface UseConversationReturn {
   recommendations: Property[];
   isLoading: boolean;
   error: string | null;
+  isOnline: boolean;
+  lastFailedMessage: string | null;
   initializeConversation: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  retryLastMessage: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -26,12 +38,35 @@ export function useConversation(): UseConversationReturn {
   const [recommendations, setRecommendations] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const isInitialized = useRef(false);
 
   const generateMessageId = () => {
     return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
+  // Online/offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const initializeConversation = useCallback(async () => {
+    // Clear storage on new conversation
+    sessionStorage.removeItem(STORAGE_KEY);
+    setLastFailedMessage(null);
+    setRecommendations([]);
+    setPreferences({});
+
     try {
       setIsLoading(true);
       setError(null);
@@ -88,6 +123,7 @@ export function useConversation(): UseConversationReturn {
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
+        setLastFailedMessage(null); // Clear on success
 
         // Update preferences if captured
         if (response.response.structured_data?.preferences_captured) {
@@ -105,6 +141,7 @@ export function useConversation(): UseConversationReturn {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to send message';
         setError(errorMessage);
+        setLastFailedMessage(content); // Store failed message for retry
 
         // Add error message
         setMessages((prev) => [
@@ -124,14 +161,63 @@ export function useConversation(): UseConversationReturn {
     [conversationId]
   );
 
+  const retryLastMessage = useCallback(async () => {
+    if (lastFailedMessage) {
+      // Remove the error assistant message
+      setMessages((prev) => prev.slice(0, -1));
+      setError(null);
+      await sendMessage(lastFailedMessage);
+    }
+  }, [lastFailedMessage, sendMessage]);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Initialize conversation on mount
+  // Load from storage or initialize on mount
   useEffect(() => {
-    initializeConversation();
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const data: StoredConversation = JSON.parse(stored);
+        setConversationId(data.conversationId);
+        setMessages(
+          data.messages.map((m) => ({
+            ...m,
+            role: m.role as 'user' | 'assistant' | 'system',
+            timestamp: new Date(m.timestamp),
+          }))
+        );
+        setPreferences(data.preferences);
+        setRecommendations(data.recommendations);
+      } catch {
+        initializeConversation();
+      }
+    } else {
+      initializeConversation();
+    }
   }, [initializeConversation]);
+
+  // Save to storage on changes
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      const data: StoredConversation = {
+        conversationId,
+        messages: messages.map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          timestamp: m.timestamp.toISOString(),
+        })),
+        preferences,
+        recommendations,
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+  }, [conversationId, messages, preferences, recommendations]);
 
   return {
     conversationId,
@@ -140,8 +226,11 @@ export function useConversation(): UseConversationReturn {
     recommendations,
     isLoading,
     error,
+    isOnline,
+    lastFailedMessage,
     initializeConversation,
     sendMessage,
+    retryLastMessage,
     clearError,
   };
 }

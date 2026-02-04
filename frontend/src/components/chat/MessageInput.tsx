@@ -2,7 +2,7 @@
  * Message input component for chat.
  */
 
-import { useState, FormEvent, KeyboardEvent } from 'react';
+import { useState, FormEvent, KeyboardEvent, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 
@@ -20,6 +20,19 @@ export function MessageInput({
   placeholder = 'Type your message...',
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-focus on mount
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
+  // Re-focus after loading completes (message sent)
+  useEffect(() => {
+    if (!isLoading && !disabled) {
+      textareaRef.current?.focus();
+    }
+  }, [isLoading, disabled]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +55,12 @@ export function MessageInput({
       className="flex items-end space-x-2 p-4 bg-white border-t border-gray-200"
     >
       <div className="flex-1">
+        <label htmlFor="chat-input" className="sr-only">
+          Type your message
+        </label>
         <textarea
+          id="chat-input"
+          ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}

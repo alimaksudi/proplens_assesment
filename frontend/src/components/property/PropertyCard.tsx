@@ -31,16 +31,25 @@ export function PropertyCard({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onSelect && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onSelect(property);
+    }
+  };
+
   return (
     <div
       className={clsx(
         'card cursor-pointer transition-all duration-200',
         isSelected && 'ring-2 ring-primary-500',
-        onSelect && 'hover:shadow-lg'
+        onSelect && 'hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
       )}
       onClick={handleClick}
+      onKeyDown={onSelect ? handleKeyDown : undefined}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
+      aria-label={onSelect ? `${property.project_name}, ${formatPrice(property.price_usd)} in ${property.city}` : undefined}
     >
       {/* Image Placeholder */}
       <div className="relative h-40 bg-gradient-to-br from-gray-200 to-gray-300">

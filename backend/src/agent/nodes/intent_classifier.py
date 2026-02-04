@@ -30,7 +30,7 @@ Analyze the user's message and classify their intent into one of these categorie
   * Affirmative responses when viewing was offered: "yes", "yes please", "sure", "I'd like that", "let's do it", "okay"
 - provide_contact: User is providing contact information (name, email, phone)
 - clarify: User is clarifying or correcting previous information
-- goodbye: User is ending the conversation
+- goodbye: User is ending the conversation (e.g., "bye", "goodbye", "thanks bye", "see you", "take care", "gotta go", "that's all", "thanks", "thank you")
 - other: None of the above
 
 IMPORTANT RULES:

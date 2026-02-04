@@ -29,8 +29,9 @@ async def confirm_booking(state: ConversationState) -> ConversationState:
         lead_data = state.get("lead_data", {})
 
         # Determine what's actually missing and ask for the right thing
+        # Only require name + email (last_name is optional, parsed from full name)
         if not lead_data.get("first_name"):
-            message = "I'd love to help you book a viewing! Could you share your first name?"
+            message = "I'd love to help you book a viewing! Could you share your name?"
         elif not lead_data.get("email"):
             first_name = lead_data.get("first_name", "")
             message = f"Thanks {first_name}! What's your email address so I can confirm the viewing?"

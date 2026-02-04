@@ -14,6 +14,7 @@ from .booking_proposal import propose_booking
 from .lead_capture import capture_lead_details
 from .booking_confirmation import confirm_booking
 from .error_handler import handle_error
+from .goodbye import handle_goodbye
 
 __all__ = [
     'greet_user',
@@ -26,4 +27,5 @@ __all__ = [
     'capture_lead_details',
     'confirm_booking',
     'handle_error',
+    'handle_goodbye',
 ]

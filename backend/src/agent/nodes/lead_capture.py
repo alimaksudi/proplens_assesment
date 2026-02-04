@@ -44,7 +44,9 @@ User just said: "{user_message}"
 
 Generate a brief response that:
 1. Thanks them for the information they provided (if any)
-2. Asks for the NEXT missing piece of information (prioritize: first_name > email > phone)
+2. Asks for the NEXT missing piece of information (prioritize: name > email > phone)
+   - Ask for "name" (user's full name), not "first name" separately
+   - If name is provided, ask for email
 
 Keep it to 1-2 sentences. Be professional. Do not use emojis."""
 
@@ -98,7 +100,10 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
         if phone:
             extracted["phone"] = phone
 
-    # Simple name extraction if message is short - BUT check it's not a property name first
+    # Parse full name from message - handles:
+    # - "Ali" → first_name: "Ali", last_name: ""
+    # - "Ali Maksudi" → first_name: "Ali", last_name: "Maksudi"
+    # - "Ali Bin Maksudi" → first_name: "Ali", last_name: "Bin Maksudi"
     if not lead_data.get("first_name"):
         words = user_message.strip().split()
 
@@ -114,10 +119,19 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
         # Don't extract as name if it looks like an email
         is_email = "@" in user_message
 
-        if not is_property_mention and not is_email and len(words) <= 3 and words and words[0].isalpha():
-            extracted["first_name"] = words[0].title()
-            if len(words) >= 2 and words[1].isalpha():
-                extracted["last_name"] = words[1].title()
+        # Allow up to 5 words for full name (e.g., "Muhammad Ali Bin Abdul Rahman")
+        if not is_property_mention and not is_email and len(words) <= 5 and words:
+            first_word = words[0]
+            # Check if first word looks like a name (alphabetic, may include apostrophe/hyphen)
+            if first_word.replace("'", "").replace("-", "").isalpha():
+                extracted["first_name"] = first_word.title()
+
+                # Everything after first word becomes last_name
+                if len(words) >= 2:
+                    last_name_parts = words[1:]
+                    # Validate all parts are name-like
+                    if all(w.replace("'", "").replace("-", "").isalpha() for w in last_name_parts):
+                        extracted["last_name"] = " ".join(w.title() for w in last_name_parts)
 
     # Try LLM extraction for additional info (but don't rely on it solely)
     llm = ChatOpenAI(
@@ -192,7 +206,7 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
                 logger.info(f"Matched property: {prop['project_name']} (id={prop['id']})")
                 break
 
-    # Check if we have enough info to proceed
+    # Check if we have enough info to proceed (first_name + email required; last_name is optional)
     if validated_lead_data.get("first_name") and validated_lead_data.get("email"):
         state["lead_captured"] = True
         state["tools_used"] = state.get("tools_used", []) + ["booking_tool"]
@@ -212,10 +226,10 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
 
         return state
 
-    # Determine what's missing for followup
+    # Determine what's missing for followup (name + email required; last_name optional)
     missing = []
     if not validated_lead_data.get("first_name"):
-        missing.append("first name")
+        missing.append("name")
     if not validated_lead_data.get("email"):
         missing.append("email address")
 
@@ -239,7 +253,7 @@ async def capture_lead_details(state: ConversationState) -> ConversationState:
         logger.error(f"Error generating followup: {e}")
 
         if not validated_lead_data.get("first_name"):
-            msg = "Could you share your first name?"
+            msg = "Could you share your name?"
         elif not validated_lead_data.get("email"):
             first_name = validated_lead_data.get("first_name", "")
             msg = f"Thanks {first_name}! What's your email address?"
