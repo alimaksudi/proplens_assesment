@@ -91,4 +91,4 @@ dmypy.json
 .claude/
 
 # Personal documentation
-docs/
+docs/private_docs/
