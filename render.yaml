@@ -28,8 +28,7 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         sync: false
       - key: REDIS_URL
-        fromService:
-          type: redis
+        fromRedis:
           name: silver-land-redis
           property: connectionString
     healthCheckPath: /api/v1/health/
@@ -40,6 +39,7 @@ databases:
     plan: free
     region: oregon
 
+redis:
   - name: silver-land-redis
     plan: free
     region: oregon
