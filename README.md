@@ -18,34 +18,7 @@ A production-grade, state-of-the-art conversational AI agent for luxury property
 
 The agent is modeled as a cyclic state machine using **LangGraph**, ensuring coherent conversation flows and reliable goal routing.
 
-```mermaid
-graph TD
-    Start((Start)) --> Greeting[greeting]
-    Greeting --> Intent{classify_intent}
-    
-    Intent -- "discover" --> Prefs[discover_preferences]
-    Intent -- "search" --> Search[search_properties]
-    Intent -- "booking" --> Book[propose_booking]
-    Intent -- "question" --> QnA[answer_questions]
-    
-    Prefs --> SearchReady{Should Search?}
-    SearchReady -- "yes" --> Search
-    SearchReady -- "no" --> End((END))
-    
-    Search --> Recommend[recommend_properties]
-    Recommend --> End
-    
-    QnA --> AfterQ{Next Step?}
-    AfterQ -- "booking" --> Book
-    AfterQ -- "search" --> Search
-    AfterQ -- "done" --> End
-    
-    Book --> Capture[capture_lead]
-    Capture --> LeadDone{Ready?}
-    LeadDone -- "yes" --> Confirm[confirm_booking]
-    LeadDone -- "no" --> End
-    Confirm --> End
-```
+![Agent Architecture](docs/agent_architecture.png)
 
 ### Technical Highlights
 - **State Management**: Persists conversation history, extracted preferences, and search results.
