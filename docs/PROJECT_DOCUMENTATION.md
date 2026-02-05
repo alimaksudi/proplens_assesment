@@ -792,8 +792,10 @@ def test_response_time_under_2_seconds():
 **Services:**
 1. **Web Service**: Django Ninja API
    - Instance: Free tier (512MB RAM)
-   - Build command: `pip install -r requirements.txt && python manage.py migrate`
-   - Start command: `gunicorn src.config.wsgi:application`
+   - Build command: `pip install -r requirements.txt && cd src && python manage.py collectstatic --noinput`
+   - Start command: `cd src && python manage.py migrate && python scripts/create_superuser.py && python manage.py import_properties ../data/Property_sales_agent_-_Challenge.csv --batch-size 500 && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
+
+   > **Note on Superuser Automation**: Since the Render Free plan does not support interactive shell access, a custom script (`create_superuser.py`) is included in the start command to automatically create an admin user from environment variables.
 
 2. **PostgreSQL**: Managed database
    - Tier: Free (1GB storage, 1M rows)
@@ -809,7 +811,12 @@ OPENAI_API_KEY=sk-...
 CHROMA_PERSIST_DIR=/opt/render/project/chroma_db
 DJANGO_SECRET_KEY=...
 DJANGO_DEBUG=False
-ALLOWED_HOSTS=silver-land-agent.onrender.com
+ALLOWED_HOSTS=.onrender.com
+CORS_ALLOWED_ORIGINS=https://silverlandagent-c8h054t6h-woshi-alis-projects.vercel.app
+# Superuser Credentials (for Free Plan automation)
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@silverland.com
+DJANGO_SUPERUSER_PASSWORD=...
 ```
 
 ### 7.3 Deployment Checklist
