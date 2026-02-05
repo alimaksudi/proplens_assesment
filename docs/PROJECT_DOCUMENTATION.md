@@ -161,59 +161,7 @@ Do NOT invoke for:
 
 ### 3.1 High-Level Architecture
 
-```
-┌─────────────┐
-│   Client    │ (Web/Mobile)
-└──────┬──────┘
-       │ HTTPS
-       ▼
-┌─────────────────────────────────────┐
-│      Django Ninja REST API          │
-│  ┌──────────────────────────────┐  │
-│  │  ConversationController      │  │
-│  │  - POST /conversations       │  │
-│  │  - POST /agents/chat         │  │
-│  └──────────────┬───────────────┘  │
-└─────────────────┼───────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│     LangGraph Agent Orchestrator    │
-│  ┌────────────────────────────┐    │
-│  │  State Machine:            │    │
-│  │  • Greeting                │    │
-│  │  • Preference Discovery    │    │
-│  │  • Property Search         │    │
-│  │  • Recommendation          │    │
-│  │  • Q&A                     │    │
-│  │  • Booking                 │    │
-│  └────────┬──────┬────────┬───┘    │
-└───────────┼──────┼────────┼─────────┘
-            │      │        │
-            ▼      ▼        ▼
-    ┌───────────┐ ┌──────────┐ ┌───────────┐
-    │  Vanna    │ │   Web    │ │  Booking  │
-    │  T2SQL    │ │  Search  │ │   Tool    │
-    │   Tool    │ │   Tool   │ │           │
-    └─────┬─────┘ └────┬─────┘ └─────┬─────┘
-          │            │             │
-          ▼            ▼             ▼
-    ┌──────────────────────────────────┐
-    │         PostgreSQL DB            │
-    │  • projects                      │
-    │  • leads                         │
-    │  • bookings                      │
-    │  • conversations                 │
-    │  • training_data (for Vanna)     │
-    └──────────────────────────────────┘
-                   │
-                   ▼
-    ┌──────────────────────────────────┐
-    │       ChromaDB (Vector DB)       │
-    │  • SQL training examples         │
-    │  • Schema embeddings             │
-    └──────────────────────────────────┘
-```
+![High-Level System Architecture](docs/system_architecture.png)
 
 ### 3.2 LangGraph State Machine Design
 
