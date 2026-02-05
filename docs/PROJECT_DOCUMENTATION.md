@@ -161,7 +161,7 @@ Do NOT invoke for:
 
 ### 3.1 High-Level Architecture
 
-![High-Level System Architecture](docs/system_architecture.png)
+![High-Level System Architecture](system_architecture.png)
 
 ### 3.2 LangGraph State Machine Design
 
