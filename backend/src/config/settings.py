@@ -123,7 +123,19 @@ _cors_origins = os.getenv(
 if _cors_origins == '*':
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = _cors_origins.split(',')
+    import urllib.parse
+    cleaned_origins = []
+    for origin in _cors_origins.split(','):
+        try:
+            parsed = urllib.parse.urlparse(origin.strip())
+            if parsed.scheme and parsed.netloc:
+                cleaned_origins.append(f"{parsed.scheme}://{parsed.netloc}")
+            else:
+                # Fallback if parsing fails or no scheme/netloc (e.g. localhost with no scheme)
+                cleaned_origins.append(origin.strip().rstrip('/'))
+        except Exception:
+            cleaned_origins.append(origin.strip().rstrip('/'))
+    CORS_ALLOWED_ORIGINS = cleaned_origins
 CORS_ALLOW_CREDENTIALS = True
 
 # Security Settings for Production
